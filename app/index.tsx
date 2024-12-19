@@ -1,72 +1,58 @@
-import CheckoutButton from "@/components/checkout/CheckoutButton";
-import PriceTag from "@/components/checkout/PriceTag";
-import Card from "@/components/containers/Card";
-import Scrollable from "@/components/containers/Scrollable";
-import HeaderHidden from "@/components/headers/HeaderHidden";
-import HeaderWithTitle from "@/components/headers/HeaderWithTitle";
-import { router } from "expo-router";
-import React from "react";
-import { Text, View } from "react-native";
+import { useRouter } from "expo-router";
+import { useEffect, useState } from "react";
+import { Alert, Text, TextInput, View } from "react-native";
 
-/**
- * index: carrinho produtos
- * checkout: total, meio de pagamento
- * compra concluída
- */
+import Loading from "../components/Loading";
+import StyledButton from "../components/StyledButton";
+import useAuth from "../firebase/hooks/useAuth";
+import globalStyles from "../styles/globalStyles";
 
-export default function index() {
-  const handleCheckout = () => {
-    router.push("/checkout");
-  };
+export default function _screen() {
+  const { user, login, loading } = useAuth();
+  const router = useRouter();
+
+  const [email, setEmail] = useState("fulano@example.com");
+  const [password, setPassword] = useState("123456");
+
+  useEffect(() => {
+    if (user) {
+      router.replace("/home/");
+    }
+  }, [user]);
+
+  if (loading) return <Loading />;
 
   return (
-    <Scrollable>
-      <HeaderWithTitle title="Shopping Cart" />
+    <View style={globalStyles.container}>
+      <Text style={globalStyles.title}>FCM</Text>
 
-      <Card title="Mouse sem fio 2.4Ghz">
-        <Text>
-          O mouse TGT Vector E1 é o equip perfeito para você que está iniciando
-          sua jornada gamer e deseja aumentar a precisão de seu setup!
-          Desenvolvido para ter o ótimo desempenho em todos os tipos de jogos,
-          este mouse é sua nova arma de combate!
-        </Text>
-        <Text>R$50,00</Text>
-      </Card>
+      <TextInput
+        style={globalStyles.input}
+        value={email}
+        onChangeText={setEmail}
+        placeholder="fulano@example.com"
+      />
+      <TextInput
+        style={globalStyles.input}
+        value={password}
+        onChangeText={setPassword}
+        placeholder="123456"
+        keyboardType="numeric"
+        secureTextEntry
+      />
 
-      <Card title="Teclado Mancer Shade">
-        <Text>
-          O teclado Mancer Shade MK2 é o item indispensável para sua próxima
-          batalha! Ele possui formato TKL em padrão ABNT2 (padrão brasileiro).
-          Foi desenvolvido com tudo que um gamer precisa, ele te levará para o
-          próximo nível!
-        </Text>
-
-        <PriceTag price={119} />
-      </Card>
-
-      <Card title="Mouse sem fio 2.4Ghz">
-        <Text>
-          O mouse TGT Vector E1 é o equip perfeito para você que está iniciando
-          sua jornada gamer e deseja aumentar a precisão de seu setup!
-          Desenvolvido para ter o ótimo desempenho em todos os tipos de jogos,
-          este mouse é sua nova arma de combate!
-        </Text>
-
-        <PriceTag price={119} />
-      </Card>
-
-      <Card title="Teclado Mancer Shade">
-        <Text>
-          O teclado Mancer Shade MK2 é o item indispensável para sua próxima
-          batalha! Ele possui formato TKL em padrão ABNT2 (padrão brasileiro).
-          Foi desenvolvido com tudo que um gamer precisa, ele te levará para o
-          próximo nível!
-        </Text>
-
-        <PriceTag price={119} />
-      </Card>
-
-      <CheckoutButton onPress={handleCheckout} />
-    </Scrollable>
+      <StyledButton
+        title="Login"
+        onPress={async () => {
+          try {
+            await login(email, password);
+            router.push("/home/");
+          } catch (error: any) {
+            Alert.alert("Login error", error.toString());
+          }
+        }}
+        style={{ marginTop: 12 }}
+      />
+    </View>
   );
 }
